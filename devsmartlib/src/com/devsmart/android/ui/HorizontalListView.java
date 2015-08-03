@@ -59,6 +59,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 	private OnItemClickListener mOnItemClicked;
 	private OnItemLongClickListener mOnItemLongClicked;
 	private boolean mDataChanged = false;
+	private boolean mIsScroller = false;
 	
 
 	public HorizontalListView(Context context, AttributeSet attrs) {
@@ -332,6 +333,7 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 			
 			synchronized(HorizontalListView.this){
 				mNextX += (int)distanceX;
+				mIsScroller = true;
 			}
 			requestLayout();
 			
@@ -343,11 +345,23 @@ public class HorizontalListView extends AdapterView<ListAdapter> {
 			for(int i=0;i<getChildCount();i++){
 				View child = getChildAt(i);
 				if (isEventWithinView(e, child)) {
-					if(mOnItemClicked != null){
-						mOnItemClicked.onItemClick(HorizontalListView.this, child, mLeftViewIndex + 1 + i, mAdapter.getItemId( mLeftViewIndex + 1 + i ));
+					int position = mLeftViewIndex + 1 + i;
+					if(mOnItemClicked != null){						
+						mOnItemClicked.onItemClick(HorizontalListView.this, child, position, mAdapter.getItemId( position ));
 					}
 					if(mOnItemSelected != null){
-						mOnItemSelected.onItemSelected(HorizontalListView.this, child, mLeftViewIndex + 1 + i, mAdapter.getItemId( mLeftViewIndex + 1 + i ));
+						mOnItemSelected.onItemSelected(HorizontalListView.this, child, position, mAdapter.getItemId( position ));
+					}
+					if(mIsScroller){
+						if(i!=0){
+							View childn = getChildAt(i -1);
+							Offset = getLocationOnWidth(child) - getLocationOnWidth(childn) - child.getWidth();	
+						}else if(childCount > 1){
+							View childn = getChildAt(i +1);
+							Offset = getLocationOnWidth(childn) - getLocationOnWidth(child) - child.getWidth();	
+						}
+						mCurrentX = mNextX +Offset*(position-1) ;
+						mIsScroller = false;
 					}
 					break;
 				}
